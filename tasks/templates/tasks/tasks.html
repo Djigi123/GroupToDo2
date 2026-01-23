@@ -12,14 +12,13 @@
         border: none;
         border-radius: 12px;
         color: white;
-        transition: all 0.3s ease; /* Плавность */
+        transition: all 0.3s ease;
         cursor: pointer;
     }
 
-    /* Эффект при наведении на карточку */
     .card-stats:hover {
-        transform: translateY(-10px); /* Приподнимаем */
-        shadow: 0 10px 20px rgba(0,0,0,0.2); /* Усиливаем тень */
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
     .bg-total { background: linear-gradient(45deg, #4e73df, #224abe); }
@@ -27,18 +26,8 @@
     .bg-doing { background: linear-gradient(45deg, #f6c23e, #f4b619); }
     .bg-done { background: linear-gradient(45deg, #1cc88a, #13855c); }
 
-    /* Анимация строк таблицы */
-    .table tbody tr {
-        transition: all 0.2s ease;
-    }
-
-    /* Подсветка строки при наведении */
-    .table tbody tr:hover {
-        background-color: #f0f2f5 !important;
-        transform: scale(1.005); /* Легкое увеличение */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        z-index: 1;
-    }
+    .table tbody tr { transition: all 0.2s ease; }
+    .table tbody tr:hover { background-color: #f0f2f5 !important; transform: scale(1.005); box-shadow: 0 4px 8px rgba(0,0,0,0.05); z-index: 1; }
 
     .priority-high { border-left: 6px solid #e74a3b !important; }
     .priority-medium { border-left: 6px solid #f6c23e !important; }
@@ -48,7 +37,7 @@
     .task-done .task-title { text-decoration: line-through; }
 
     .btn-finish { border-radius: 20px; font-weight: bold; transition: 0.3s; }
-    .btn-finish:hover { transform: scale(1.1); } /* Кнопка тоже анимирована */
+    .btn-finish:hover { transform: scale(1.1); }
 </style>
 </head>
 <body>
@@ -58,6 +47,7 @@
             <a href="/admin/tasks/task/add/" class="btn btn-primary btn-lg shadow">+ Создать задачу</a>
         </div>
 
+        <!-- Статистика -->
         <div class="row mb-5">
             <div class="col-md-3">
                 <div class="card card-stats bg-total shadow h-100">
@@ -93,6 +83,7 @@
             </div>
         </div>
 
+        <!-- Поиск -->
         <div class="card shadow-sm mb-4 border-0">
             <div class="card-body">
                 <form method="GET" class="row g-2">
@@ -106,11 +97,12 @@
             </div>
         </div>
 
+        <!-- Таблица задач -->
         <div class="card shadow border-0 overflow-hidden">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4">Проект</th>
+                        <th class="ps-4">Группа</th>
                         <th>Задача</th>
                         <th>Статус</th>
                         <th>Дедлайн</th>
@@ -121,7 +113,7 @@
                     {% for task in tasks %}
                     <tr class="priority-{{ task.priority }} {% if task.status == 'done' %}task-done{% endif %}">
                         <td class="ps-4">
-                            <span class="badge rounded-pill bg-light text-dark border">{{ task.project.name }}</span>
+                            <span class="badge rounded-pill bg-light text-dark border">{{ task.group.name }}</span>
                         </td>
                         <td>
                             <div class="task-title fw-bold text-dark">{{ task.title }}</div>
@@ -129,7 +121,7 @@
                         </td>
                         <td>
                             {% if task.status == 'todo' %}<span class="badge bg-secondary">To Do</span>
-                            {% elif task.status == 'doing' %}<span class="badge bg-warning text-dark">Doing</span>
+                            {% elif task.status == 'progress' %}<span class="badge bg-warning text-dark">Doing</span>
                             {% else %}<span class="badge bg-success text-white">Done</span>{% endif %}
                         </td>
                         <td class="text-muted fw-bold">{{ task.deadline|date:"d M" }}</td>

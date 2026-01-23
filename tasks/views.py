@@ -1,33 +1,33 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Task, Project
-from django.db.models import Q
+from django.shortcuts import render, redirect
+from .models import Task, Group
+from django.db.models import Count
+from django.utils import timezone
 
 def task_list(request):
-    tasks = Task.objects.all().order_by('deadline')
-    projects = Project.objects.all()
+    tasks = Task.objects.all()
+
+    # Статистика по статусам
+    stats = {
+        'total': tasks.count(),
+        'todo': tasks.filter(status='todo').count(),
+        'doing': tasks.filter(status='progress').count(),
+        'done': tasks.filter(status='done').count()
+    }
 
     # Поиск
     search_query = request.GET.get('search', '')
     if search_query:
-        tasks = tasks.filter(Q(title__icontains=search_query))
+        tasks = tasks.filter(title__icontains=search_query)
 
-    # Статистика
-    stats = {
-        'total': tasks.count(),
-        'todo': tasks.filter(status='todo').count(),
-        'doing': tasks.filter(status='doing').count(),
-        'done': tasks.filter(status='done').count(),
-    }
-
-    return render(request, 'tasks/index.html', {
+    return render(request, 'tasks/tasks.html', {
         'tasks': tasks,
-        'projects': projects,
         'stats': stats,
         'search_query': search_query
     })
 
+
 def complete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = Task.objects.get(id=task_id)
     task.status = 'done'
     task.save()
     return redirect('task_list')
