@@ -70,12 +70,12 @@ TEMPLATES = [
     },
 ]
 
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ]
 }
-
 
 WSGI_APPLICATION = 'TaskManagerProject.wsgi.application'
 
