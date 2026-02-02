@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+   <style>
+    body { background-color: #f4f7f6; color: #333; font-family: 'Segoe UI', sans-serif; }
+
+    /* Анимация карточек статистики */
+    .card-stats {
+        border: none;
+        border-radius: 12px;
+        color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .card-stats:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .bg-total { background: linear-gradient(45deg, #4e73df, #224abe); }
+    .bg-todo { background: linear-gradient(45deg, #858796, #60616f); }
+    .bg-doing { background: linear-gradient(45deg, #f6c23e, #f4b619); }
+    .bg-done { background: linear-gradient(45deg, #1cc88a, #13855c); }
+
+    .table tbody tr { transition: all 0.2s ease; }
+    .table tbody tr:hover { background-color: #f0f2f5 !important; transform: scale(1.005); box-shadow: 0 4px 8px rgba(0,0,0,0.05); z-index: 1; }
+
+    .priority-high { border-left: 6px solid #e74a3b !important; }
+    .priority-medium { border-left: 6px solid #f6c23e !important; }
+    .priority-low { border-left: 6px solid #1cc88a !important; }
+
+    .task-done { opacity: 0.5; background-color: #f8f9fa !important; }
+    .task-done .task-title { text-decoration: line-through; }
+
+    .btn-finish { border-radius: 20px; font-weight: bold; transition: 0.3s; }
+    .btn-finish:hover { transform: scale(1.1); }
+</style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h1 class="fw-bold text-dark">📋 Панель управления</h1>
+            <a href="/admin/tasks/task/add/" class="btn btn-primary btn-lg shadow">+ Создать задачу</a>
+        </div>
+
+        <!-- Статистика -->
+        <div class="row mb-5">
+            <div class="col-md-3">
+                <div class="card card-stats bg-total shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="small opacity-75">Всего</div>
+                        <h2 class="display-6 fw-bold">{{ stats.total }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats bg-todo shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="small opacity-75">Нужно сделать</div>
+                        <h2 class="display-6 fw-bold">{{ stats.todo }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats bg-doing shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="small opacity-75">В процессе</div>
+                        <h2 class="display-6 fw-bold">{{ stats.doing }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stats bg-done shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="small opacity-75">Завершено</div>
+                        <h2 class="display-6 fw-bold">{{ stats.done }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поиск -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body">
+                <form method="GET" class="row g-2">
+                    <div class="col-md-10">
+                        <input type="text" name="search" class="form-control form-control-lg border-0 bg-light" placeholder="Поиск по задачам..." value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-dark btn-lg w-100" type="submit">Найти</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Таблица задач -->
+        <div class="card shadow border-0 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Группа</th>
+                        <th>Задача</th>
+                        <th>Статус</th>
+                        <th>Дедлайн</th>
+                        <th class="text-center">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr class="priority-{{ task.priority }} {% if task.status == 'done' %}task-done{% endif %}">
+                        <td class="ps-4">
+                            <span class="badge rounded-pill bg-light text-dark border">{{ task.group.name }}</span>
+                        </td>
+                        <td>
+                            <div class="task-title fw-bold text-dark">{{ task.title }}</div>
+                            <small class="text-muted">Исполнитель: {{ task.assigned_to.username|default:"—" }}</small>
+                        </td>
+                        <td>
+                            {% if task.status == 'todo' %}<span class="badge bg-secondary">To Do</span>
+                            {% elif task.status == 'progress' %}<span class="badge bg-warning text-dark">Doing</span>
+                            {% else %}<span class="badge bg-success text-white">Done</span>{% endif %}
+                        </td>
+                        <td class="text-muted fw-bold">{{ task.deadline|date:"d M" }}</td>
+                        <td class="text-center">
+                            {% if task.status != 'done' %}
+                                <a href="{% url 'complete_task' task.id %}" class="btn btn-finish btn-success btn-sm px-4">Завершить</a>
+                            {% else %}
+                                <span class="text-success fw-bold">✓ Готово</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-5 text-muted">Задачи не найдены</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
